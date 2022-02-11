@@ -51,16 +51,10 @@ const MarketSchema = mongoose.Schema({
         required: true
     },
     createdAt: {
-        type: Date,
-        required: true
+        type: Date
     },
     updatedAt: {
-        type: Date,
-        required: true
-    },
-    id: {
-        type: Number,
-        required: true
+        type: Date
     }
 })
 
