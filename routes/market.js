@@ -61,12 +61,6 @@ router.delete('/:id',
     marketController.deleteMarket
 );
 
-// change items per page in pagination
-// markets/pagination/count
-router.put('/pagination/:count',
-    marketController.changeItemsPerPage
-);
-
 // export to PDF the markets
 // markets/export
 router.post("/export",

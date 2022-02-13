@@ -7,8 +7,6 @@ const utils = require("../utils/convertToPdf");
 
 const { validationResult } = require('express-validator');
 
-let ITEMS_PER_PAGE = 10;
-
 exports.createMarket = async (req, res) => {
 
     // check for errors
@@ -34,12 +32,22 @@ exports.createMarket = async (req, res) => {
     }
 }
 
+// It allows to obtain all the markets through a pagination, it also allows to do text searches 
+// through the query search, order by date of creation through the query sort and filter by parameters
 exports.getMarkets = async (req, res) => {
     try {
 
         const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
         const searchText = req.query.search;
         const sort = req.query.sort;
+        let queries = req.query;
+
+        // page, limit, search and sort queries are deleted to keep the others if they exist to filter
+        delete queries.page;
+        delete queries.limit;
+        delete queries.search;
+        delete queries.sort;
 
         // if the searchText exists, only the markets that contain the search term are returned, otherwise all are returned
         if (searchText) {
@@ -50,26 +58,26 @@ exports.getMarkets = async (req, res) => {
             // Markets are sorted from the first created to the most recent
             if (sort === "old") {
                 markets = await Market.find({ $text: { $search: searchText } })
-                    .skip((page - 1) * ITEMS_PER_PAGE)
-                    .limit(ITEMS_PER_PAGE)
+                    .skip((page - 1) * limit)
+                    .limit(limit)
                     .sort([['createdAt', 1]]);
             }
             // the markets are ordered from the last created to the oldest
             else if (sort === "new") {
                 markets = await Market.find({ $text: { $search: searchText } })
-                    .skip((page - 1) * ITEMS_PER_PAGE)
-                    .limit(ITEMS_PER_PAGE)
+                    .skip((page - 1) * limit)
+                    .limit(limit)
                     .sort([['createdAt', -1]]);
             }
             // no sorting
             else {
                 markets = await Market.find({ $text: { $search: searchText } })
-                    .skip((page - 1) * ITEMS_PER_PAGE)
-                    .limit(ITEMS_PER_PAGE);
+                    .skip((page - 1) * limit)
+                    .limit(limit);
             }
 
             const marketsCount = totalSearch.length;
-            const totalPages = Math.ceil(marketsCount / ITEMS_PER_PAGE);
+            const totalPages = Math.ceil(marketsCount / limit);
             const currentPage = Math.ceil(page);
 
             const getManyMarketResponseDto = new GetManyMarketResponseDto(markets, markets.length, marketsCount, currentPage, totalPages);
@@ -78,30 +86,51 @@ exports.getMarkets = async (req, res) => {
         }
         else {
             let markets;
+            let filters = "";
+            let objFilter;
+
+            if (Object.keys(queries).length !== 0) {
+                filters = "{ ";
+
+                const entries = Object.entries(queries);
+
+                for(let i = 0; i < entries.length; i++) {
+                    //filters += '"' + entries[i][0] + '": ' + (!isNaN(entries[i][1]) ? entries[i][1] : '"' + entries[i][1] + '"');
+                    filters += '"' + entries[i][0] + '": "' + entries[i][1] + '"';
+
+                    if(i + 1 != entries.length) {
+                        filters += ", ";
+                    }
+                }
+
+                filters += " }";
+
+                objFilter = JSON.parse(filters);
+            }
 
             // Markets are sorted from the first created to the most recent
             if (sort === "old") {
-                markets = await Market.find()
-                    .skip((page - 1) * ITEMS_PER_PAGE)
-                    .limit(ITEMS_PER_PAGE)
+                markets = await Market.find(objFilter)
+                    .skip((page - 1) * limit)
+                    .limit(limit)
                     .sort([['createdAt', 1]]);
             }
             // the markets are ordered from the last created to the oldest
             else if (sort === "new") {
-                markets = await Market.find()
-                    .skip((page - 1) * ITEMS_PER_PAGE)
-                    .limit(ITEMS_PER_PAGE)
+                markets = await Market.find(objFilter)
+                    .skip((page - 1) * limit)
+                    .limit(limit)
                     .sort([['createdAt', -1]]);
             }
             // no sorting
             else {
-                markets = await Market.find()
-                    .skip((page - 1) * ITEMS_PER_PAGE)
-                    .limit(ITEMS_PER_PAGE);
+                markets = await Market.find(objFilter)
+                    .skip((page - 1) * limit)
+                    .limit(limit);
             }
 
             const marketsCount = await Market.countDocuments();
-            const totalPages = Math.ceil(marketsCount / ITEMS_PER_PAGE);
+            const totalPages = Math.ceil(marketsCount / limit);
             const currentPage = Math.ceil(page);
 
             const getManyMarketResponseDto = new GetManyMarketResponseDto(markets, markets.length, marketsCount, currentPage, totalPages);
@@ -196,16 +225,6 @@ exports.deleteMarket = async (req, res) => {
         console.log(error);
         return res.status(500).json({ msg: "An error has ocurred" });
     }
-}
-
-exports.changeItemsPerPage = (req, res) => {
-    let itemsPerPage = req.params.count;
-
-    if (itemsPerPage) {
-        ITEMS_PER_PAGE = itemsPerPage;
-    }
-
-    return res.json({ msg: `Items per page changed to ${ITEMS_PER_PAGE}` });
 }
 
 exports.exportToPdf = (req, res) => {
