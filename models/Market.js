@@ -55,7 +55,13 @@ const MarketSchema = mongoose.Schema({
     },
     updatedAt: {
         type: Date
+    },
+    id: {
+        type: Number,
+        required: true
     }
 })
+
+MarketSchema.index({ '$**': 'text' });
 
 module.exports = mongoose.model("Market", MarketSchema);
