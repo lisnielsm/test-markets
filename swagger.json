@@ -1,0 +1,286 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "Test Markets",
+        "description": "API to test CRUD functions and others such as filtering, sorting and searching in markets",
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        }
+    },
+    "host": "localhost:4000",
+    "basePath": "/",
+    "tags": [
+        {
+            "name": "Markets",
+            "description": "API for markets in the system"
+        }
+    ],
+    "schemes": [
+        "http"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/markets": {
+            "get": {
+                "tags": [
+                    "Markets"
+                ],
+                "summary": "Retrieve multiple Markets",
+                "parameters": [
+                    {
+                        "name": "s",
+                        "in": "query",
+                        "type": "string",
+                        "description": "Adds search condition."
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "type": "integer",
+                        "description": "Limit amount of resources."
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "type": "integer",
+                        "description": "Page portion of resources."
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "type": "new || old",
+                        "description": "Sort market by createdAt field."
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "type": "array[string]",
+                        "description": "Adds filter condition."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Get many base responses",
+                        "schema": {
+                            "$ref": "#/definitions/GetManyMarketResponseDto"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Markets"
+                ],
+                "summary": "Create a single Market",
+                "responses": {
+                    "201": {
+                        "description": "Get create one base response",
+                        "schema": {
+                            "$ref": "#/definitions/Market"
+                        }
+                    }
+                }
+            }
+        },
+        "/markets/{id}": {
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "type": "integer"
+                }
+            ],
+            "get": {
+                "summary": "Retrieve a single Market",
+                "tags": [
+                    "Markets"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Get one base response",
+                        "schema": {
+                            "$ref": "#/definitions/Market"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "summary": "Replace a single Market",
+                "tags": [
+                    "Markets"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response",
+                        "schema": {
+                            "$ref": "#/definitions/Market"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Update a single Market",
+                "tags": [
+                    "Markets"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Response",
+                        "schema": {
+                            "$ref": "#/definitions/Market"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a single Market",
+                "tags": [
+                    "Markets"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Delete one base response"
+                    }
+                }
+            }
+        },
+        "/markets/bulk": {
+            "post": {
+                "tags": [
+                    "Markets"
+                ],
+                "summary": "Create multiple Markets",
+                "responses": {
+                    "201": {
+                        "description": "Get create many base response",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "$ref": "#/definitions/Market"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Market": {
+            "required": [
+                "symbol",
+                "name",
+                "country",
+                "industry",
+                "ipoYear",
+                "marketCap",
+                "sector",
+                "volume",
+                "netChange",
+                "netChangePercent",
+                "lastPrice",
+                "createdAt",
+                "updatedAt",
+                "id"
+            ],
+            "properties": {
+                "symbol": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "industry": {
+                    "type": "string"
+                },
+                "ipoYear": {
+                    "type": "integer"
+                },
+                "marketCap": {
+                    "type": "number"
+                },
+                "sector": {
+                    "type": "string"
+                },
+                "volume": {
+                    "type": "number"
+                },
+                "netChange": {
+                    "type": "number"
+                },
+                "netChangePercent": {
+                    "type": "number"
+                },
+                "lastPrice": {
+                    "type": "number"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "CreateManyMarketDto": {
+            "required": [
+                "bulk"
+            ],
+            "properties": {
+                "bulk": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/Market"
+                    }
+                }
+            }
+        },
+        "GetManyMarketResponseDto": {
+            "required": [
+                "data",
+                "count",
+                "total",
+                "page",
+                "pageCount"
+            ],
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "$ref": "#/definitions/Market"
+                    }
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pageCount": {
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}

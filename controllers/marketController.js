@@ -1,5 +1,6 @@
 const Market = require("../models/Market");
 
+const MarketDto = require("../models/DTOs/MarketDto");
 const CreateManyMarketDto = require("../models/DTOs/CreateManyMarketDto");
 const GetManyMarketResponseDto = require("../models/DTOs/GetManyMarketResponseDto");
 
@@ -25,7 +26,42 @@ exports.createMarket = async (req, res) => {
         // save the new market to database
         await market.save();
 
-        return res.status(201).json({ market });
+        const marketDto = new MarketDto(market.symbol, market.name, market.country, market.industry, market.ipoYear, market.marketCap, market.sector, market.volume, market.netChange, market.netChangePercent, market.lastPrice, market.createdAt, market.updatedAt, market.id);
+
+        return res.status(201).json(marketDto);
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ msg: "There was an error" });
+    }
+}
+
+exports.createManyMarkets = async (req, res) => {
+
+    // check for errors
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+        // create new markets
+        const bulk = req.body.bulk;
+        
+        for (let market of bulk) {
+            market.createdAt = Date.now();
+        }
+
+        const markets = await Market.create(bulk);
+
+        let marketsDto = [];
+
+        for (let market of markets) {
+            const marketDto = new MarketDto(market.symbol, market.name, market.country, market.industry, market.ipoYear, market.marketCap, market.sector, market.volume, market.netChange, market.netChangePercent, market.lastPrice, market.createdAt, market.updatedAt, market.id);
+            marketsDto.push(marketDto);
+        }
+
+        return res.status(201).json(marketsDto);
     } catch (error) {
         console.log(error);
         return res.status(500).json({ msg: "There was an error" });
@@ -82,7 +118,7 @@ exports.getMarkets = async (req, res) => {
 
             const getManyMarketResponseDto = new GetManyMarketResponseDto(markets, markets.length, marketsCount, currentPage, totalPages);
 
-            return res.json({ getManyMarketResponseDto });
+            return res.json(getManyMarketResponseDto);
         }
         else {
             let markets;
@@ -135,7 +171,7 @@ exports.getMarkets = async (req, res) => {
 
             const getManyMarketResponseDto = new GetManyMarketResponseDto(markets, markets.length, marketsCount, currentPage, totalPages);
 
-            return res.json({ getManyMarketResponseDto });
+            return res.json(getManyMarketResponseDto);
         }
 
     } catch (error) {
@@ -153,7 +189,9 @@ exports.getMarketById = async (req, res) => {
             return res.status(404).json({ msg: "Market not found" });
         }
 
-        return res.json({ market });
+        const marketDto = new MarketDto(market.symbol, market.name, market.country, market.industry, market.ipoYear, market.marketCap, market.sector, market.volume, market.netChange, market.netChangePercent, market.lastPrice, market.createdAt, market.updatedAt, market.id);
+
+        return res.json(marketDto);
 
     } catch (error) {
         console.log(error);
@@ -198,7 +236,91 @@ exports.updateMarket = async (req, res) => {
 
         market.save();
 
-        return res.json({ market });
+        const marketDto = new MarketDto(market.symbol, market.name, market.country, market.industry, market.ipoYear, market.marketCap, market.sector, market.volume, market.netChange, market.netChangePercent, market.lastPrice, market.createdAt, market.updatedAt, market.id);
+
+        return res.json(marketDto);
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ msg: "An error has ocurred" });
+    }
+}
+
+exports.patchMarket = async (req, res) => {
+
+    // check for errors
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    // get the variables of market from body
+    const { symbol, name, country, industry, ipoYear, marketCap, sector, volume, netChange, netChangePercent, lastPrice, id } = req.body;
+
+    try {
+
+        // check the id
+        let market = await Market.findOne({ id: parseInt(req.params.id) });
+
+        if (!market) {
+            return res.status(404).json({ msg: "Market not found" });
+        }
+
+        if(symbol) {
+            market.symbol = symbol;
+        }
+
+        if(name) {
+            market.name = name;
+        }
+        if(country) {
+            market.country = country;
+        }
+
+        if(industry) {
+            market.industry = industry;
+        }
+
+        if (ipoYear) {
+            market.ipoYear = ipoYear;
+        }
+
+        if (marketCap) {
+            market.marketCap = marketCap;
+        }
+
+        if (sector) {
+            market.sector = sector;
+        }
+
+        if (volume) {
+            market.volume = volume;
+        }
+
+        if (netChange) {
+            market.netChange = netChange;
+        }
+
+        if (netChangePercent) {
+            market.netChangePercent = netChangePercent;
+        }
+
+        if (lastPrice) {
+            market.lastPrice = lastPrice;
+        }
+
+        if (id) {
+            market.id = id;
+        }
+        
+        market.updatedAt = Date.now();
+
+        market.save();
+
+        const marketDto = new MarketDto(market.symbol, market.name, market.country, market.industry, market.ipoYear, market.marketCap, market.sector, market.volume, market.netChange, market.netChangePercent, market.lastPrice, market.createdAt, market.updatedAt, market.id);
+
+        return res.json(marketDto);
 
     } catch (error) {
         console.log(error);
