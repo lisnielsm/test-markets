@@ -14,7 +14,9 @@ const app = express();
 app.use(cors());
 
 // connect to database
-connectDB();
+if (process.env.NODE_ENV !== "test") {
+    connectDB();
+}
 
 // enable express.json
 app.use(express.json({ extended: true }));

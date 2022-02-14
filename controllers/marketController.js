@@ -52,7 +52,7 @@ exports.createManyMarkets = async (req, res) => {
             market.createdAt = Date.now();
         }
 
-        const markets = await Market.create(bulk);
+        const markets = await Market.insertMany(bulk);
 
         let marketsDto = [];
 
@@ -75,14 +75,14 @@ exports.getMarkets = async (req, res) => {
 
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 5;
-        const searchText = req.query.search;
+        const searchText = req.query.s;
         const sort = req.query.sort;
         let queries = req.query;
 
         // page, limit, search and sort queries are deleted to keep the others if they exist to filter
         delete queries.page;
         delete queries.limit;
-        delete queries.search;
+        delete queries.s;
         delete queries.sort;
 
         // if the searchText exists, only the markets that contain the search term are returned, otherwise all are returned
@@ -116,7 +116,14 @@ exports.getMarkets = async (req, res) => {
             const totalPages = Math.ceil(marketsCount / limit);
             const currentPage = Math.ceil(page);
 
-            const getManyMarketResponseDto = new GetManyMarketResponseDto(markets, markets.length, marketsCount, currentPage, totalPages);
+            let marketsDto = [];
+
+            for (let market of markets) {
+                const marketDto = new MarketDto(market.symbol, market.name, market.country, market.industry, market.ipoYear, market.marketCap, market.sector, market.volume, market.netChange, market.netChangePercent, market.lastPrice, market.createdAt, market.updatedAt, market.id);
+                marketsDto.push(marketDto);
+            }
+
+            const getManyMarketResponseDto = new GetManyMarketResponseDto(marketsDto, markets.length, marketsCount, currentPage, totalPages);
 
             return res.json(getManyMarketResponseDto);
         }
@@ -144,6 +151,8 @@ exports.getMarkets = async (req, res) => {
                 objFilter = JSON.parse(filters);
             }
 
+            const marketsFiltered = await Market.find(objFilter);
+
             // Markets are sorted from the first created to the most recent
             if (sort === "old") {
                 markets = await Market.find(objFilter)
@@ -165,11 +174,18 @@ exports.getMarkets = async (req, res) => {
                     .limit(limit);
             }
 
-            const marketsCount = await Market.countDocuments();
+            const marketsCount = marketsFiltered.length;
             const totalPages = Math.ceil(marketsCount / limit);
             const currentPage = Math.ceil(page);
 
-            const getManyMarketResponseDto = new GetManyMarketResponseDto(markets, markets.length, marketsCount, currentPage, totalPages);
+            let marketsDto = [];
+
+            for (let market of markets) {
+                const marketDto = new MarketDto(market.symbol, market.name, market.country, market.industry, market.ipoYear, market.marketCap, market.sector, market.volume, market.netChange, market.netChangePercent, market.lastPrice, market.createdAt, market.updatedAt, market.id);
+                marketsDto.push(marketDto);
+            }
+
+            const getManyMarketResponseDto = new GetManyMarketResponseDto(marketsDto, markets.length, marketsCount, currentPage, totalPages);
 
             return res.json(getManyMarketResponseDto);
         }
