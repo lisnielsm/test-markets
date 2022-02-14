@@ -382,7 +382,7 @@ exports.exportToPdf = (req, res) => {
 
         utils.convertToPdf(markets.bulk, "./pdfs");
 
-        return res.json({ msg: "PDF created in pdfs folder" });
+        return res.json({ msg: "PDF created" });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ msg: "There was an error" });

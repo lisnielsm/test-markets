@@ -171,6 +171,37 @@
                     }
                 }
             }
+        },
+        "/markets/export": {
+            "post": {
+                "tags": [
+                    "Markets"
+                ],
+                "summary": "Export to PDF multiple Markets",
+                "parameters": [
+                    {
+                        "name": "bulk",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "properties": {
+                                "bulk": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "$ref": "#/definitions/Market"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF Created"
+                    }
+                }
+            }
         }
     },
     "definitions": {
